@@ -1,6 +1,32 @@
 import math
 from functools import reduce
 
+class PSequenceGenerator:
+    def __init__(self, s, p):
+        self.p = p
+        self.s = s
+        self.a = [] # The p-ordering
+    
+    def __next__(self):
+        '''
+        Returns the next value for the p-sequence
+        '''
+        a_i, power = self.s.select_next_term(self.p, self.a)
+        for i in range(len(self.s.values)):
+            if a_i == self.s.get(i):
+                break
+        else:
+            print('a_i = {} is not in s = {}'.format(a_i, self.s))
+            exit(1)
+        self.a.append(a_i)
+        return power
+
+    def __str__(self):
+        return 'a = ' + str(self.a)
+    def __repr__(self):
+        return str(self)
+
+
 class LazyList:
     '''
     A list that is lazily generated.
@@ -20,7 +46,7 @@ class LazyList:
     def __str__(self):
         return str(self.values)[:-1] + ', ...]'
     def __repr__(self):
-        return self.__str__()
+        return str(self)
 
 
 class Set(LazyList):
@@ -32,7 +58,7 @@ class Set(LazyList):
         def p_sequence_gen(): # Define a generator for the p-sequence of each prime
             i = 0
             while True:
-                yield LazyList(self.p_sequence(_primes.get(i)))
+                yield LazyList(PSequenceGenerator(self, _primes.get(i)))
                 i += 1
         self.p_sequences = LazyList(p_sequence_gen())
 
@@ -64,22 +90,19 @@ class Set(LazyList):
             i += 1
         return best[1:] # returns a_i and the power of p
 
-    def p_sequence(self, p):
-        '''
-        Returns a generator for the p-sequence of the specified prime.
-        '''
-        a = [] # The p-ordering
-        while True:
-            a_i, power = self.select_next_term(p, a)
-            a.append(a_i)
-            yield power
-
     def print_sequences(self):
         '''
         Print the current values for the p-sequences
         '''
         for i in range(len(self.p_sequences.values)):
             print(_primes.get(i), self.p_sequences.get(i))
+
+    def print_orders(self):
+        '''
+        Print the current values for the p-orders
+        '''
+        for i in range(len(self.p_sequences.values)):
+            print(_primes.get(i), self.p_sequences.get(i).gen)
 
     def factorial(self, x):
         '''
@@ -133,9 +156,11 @@ def square_gen():
 
 if __name__ == '__main__':
     # If this is the main program, run the square number set
-    s = Set(prime_gen())
+    s = Set(square_gen())
     print('Enter a number for factorial: ', end='')
     n = int(input())
     print('\n{}! in set of squares is {}\n'.format(n, s.factorial(int(n))))
     print('The p-sequences used are:')
     s.print_sequences()
+    print('\nThe p-orders used are:')
+    s.print_orders()
