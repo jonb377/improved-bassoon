@@ -1,11 +1,12 @@
 import math
 from functools import reduce
-from lazylist import LazyList, _primes
+from lazylist import LazyList
+from primes import _primes
 
 class PSequenceGenerator:
     def __init__(self, s, p):
         self.p = p
-        self.s = s
+        self.s = s  # The set
         self.a = [] # The p-ordering
     
     def __next__(self):
@@ -31,7 +32,7 @@ class Set(LazyList):
         def p_sequence_gen(): # Define a generator for the p-sequence of each prime
             i = 0
             while True:
-                yield LazyList(PSequenceGenerator(self, _primes.get(i)))
+                yield LazyList(PSequenceGenerator(self, _primes[i]]))
                 i += 1
         self.p_sequences = LazyList(p_sequence_gen())
 
@@ -52,7 +53,7 @@ class Set(LazyList):
         best = (float('inf'), -1, float('inf'))    # (index, a_i value, minpow)
         i = 0
         while i - best[0] < timeout:
-            v = self.get(i)
+            v = self[i]
             prod = reduce(lambda x, y: x * y, map(lambda x: v - x, a), 1)
             if prod == 0:
                 timeout += 2 # Try to keep the timeout large enough
@@ -68,14 +69,14 @@ class Set(LazyList):
         Print the current values for the p-sequences
         '''
         for i in range(len(self.p_sequences.values)):
-            print(_primes.get(i), self.p_sequences.get(i))
+            print(_primes[i], self.p_sequences[i])
 
     def print_orders(self):
         '''
         Print the current values for the p-orders
         '''
         for i in range(len(self.p_sequences.values)):
-            print(_primes.get(i), self.p_sequences.get(i).gen)
+            print(_primes[i], self.p_sequences[i].gen)
 
     def factorial(self, x):
         '''
@@ -83,9 +84,12 @@ class Set(LazyList):
         '''
         i = 0
         fact = 1
-        while self.p_sequences.get(i).get(x) > 1:
-            fact *= self.p_sequences.get(i).get(x)
+        ones = 0
+        while ones < 3:
+            fact *= self.p_sequences[i][x]
             i += 1
+            if self.p_sequences[i][x] == 1:
+                ones += 1
         return fact
 
 
